@@ -1,0 +1,1002 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+h1 {
+  color: #333;
+  text-align: center;
+}
+
+.instructions {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border: 2px solid #2196f3;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.pwa-install-banner {
+  background: linear-gradient(135deg, #4caf50, #8bc34a);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  display: none;
+}
+
+.pwa-install-banner button {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+.offline-indicator {
+  background: #f44336;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.online-indicator {
+  background: #4caf50;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.actions {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.action-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 0 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.action-btn.secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.action-btn.secondary:hover {
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+  padding-top: 60px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+}
+
+.modal-content-large {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content-xlarge {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover, .close:focus {
+  color: black;
+  text-decoration: none;
+}
+
+.goals-list, .add-goal-section {
+  margin-bottom: 20px;
+}
+
+#new-goal-input {
+  width: calc(100% - 22px);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.goal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin: 8px 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.goal-text {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.goal-edit-input {
+  flex-grow: 1;
+  margin-right: 10px;
+  padding: 8px;
+  border: 2px solid #667eea;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.goal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-goal-btn, .save-goal-btn, .cancel-goal-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.3s ease;
+}
+
+.edit-goal-btn:hover, .save-goal-btn:hover {
+  background: #45a049;
+}
+
+.cancel-goal-btn {
+  background: #ff9800;
+}
+
+.cancel-goal-btn:hover {
+  background: #e68900;
+}
+
+.delete-goal-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.3s ease;
+}
+
+.delete-goal-btn:hover {
+  background: #ff5252;
+}
+
+.add-goal-section {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.add-goal-section input {
+  width: 70%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.add-goal-section button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.add-goal-section button:hover {
+  background: #218838;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Modal styles */
+.goal-modal-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.goal-modal-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.goal-modal-title {
+  margin: 0 0 10px 0;
+  text-transform: capitalize;
+}
+
+.goal-modal-title.earned {
+  color: #4caf50;
+}
+
+.goal-modal-title.progress {
+  color: #ff9800;
+}
+
+.goal-modal-status {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.goal-modal-instruction {
+  font-size: 14px;
+  color: #999;
+}
+
+.goal-buttons-container {
+  margin-bottom: 20px;
+}
+
+.goal-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.goal-button {
+  background: linear-gradient(135deg, #2196f3, #64b5f6);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-align: center;
+}
+
+.goal-button:hover {
+  transform: scale(1.05);
+}
+
+.modal-actions {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.cancel-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Rewards window styles */
+.rewards-window {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border: 3px solid #f57c00;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.rewards-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.rewards-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #e65100;
+}
+
+.rewards-target {
+  margin-left: auto;
+  background: #ff9800;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.rewards-section {
+  margin-bottom: 20px;
+}
+
+.rewards-section-title {
+  color: #e65100;
+  margin-bottom: 10px;
+}
+
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.rewards-grid-progress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.earned-reward-card {
+  background: linear-gradient(135deg, #4caf50, #8bc34a);
+  border: 2px solid #2e7d32;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  transition: transform 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.earned-reward-card:hover {
+  transform: scale(1.05);
+}
+
+.reward-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.reward-name {
+  font-size: 16px;
+  text-transform: capitalize;
+  margin-bottom: 5px;
+}
+
+.reward-status {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.reward-hint {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.reward-history-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-reward-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #ff9800;
+  border-radius: 8px;
+  padding: 15px;
+  transition: transform 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-reward-card:hover {
+  transform: scale(1.02);
+}
+
+.progress-reward-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.progress-reward-icon {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.progress-reward-name {
+  font-weight: bold;
+  color: #e65100;
+  text-transform: capitalize;
+}
+
+.progress-bar-container {
+  background: #e0e0e0;
+  border-radius: 10px;
+  height: 20px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, #ff9800, #ffc107);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.progress-info {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.progress-remaining {
+  color: #ff5722;
+  font-weight: bold;
+}
+
+.progress-action-hint {
+  font-size: 10px;
+  color: #2196f3;
+  margin-top: 4px;
+}
+
+.progress-history-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,152,0,0.2);
+  border: 1px solid rgba(255,152,0,0.3);
+  color: #e65100;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.no-rewards-message {
+  text-align: center;
+  color: #e65100;
+  font-style: italic;
+  padding: 20px;
+}
+
+.rewards-actions {
+  text-align: center;
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 20px;
+}
+
+.refresh-button {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Activity history modal styles */
+.activity-history-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.activity-history-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.activity-history-title {
+  margin: 0 0 5px 0;
+  text-transform: capitalize;
+}
+
+.activity-history-title.earned {
+  color: #4caf50;
+}
+
+.activity-history-title.progress {
+  color: #333;
+}
+
+.activity-history-status {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.activity-history-count {
+  color: #666;
+  font-size: 16px;
+}
+
+.no-activities-message {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 40px;
+}
+
+.activity-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  padding: 15px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.activity-item.even {
+  background: #f8f9fa;
+}
+
+.activity-item.odd {
+  background: #ffffff;
+}
+
+.activity-item.earned {
+  border-left: 4px solid #4caf50;
+}
+
+.activity-item.progress {
+  border-left: 4px solid #ff9800;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-goal {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.activity-date {
+  font-size: 12px;
+  color: #666;
+}
+
+.activity-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delete-activity-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.delete-activity-button:hover {
+  background: #d32f2f;
+}
+
+.activity-number {
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+}
+
+.activity-number.earned {
+  background: #4caf50;
+}
+
+.activity-number.progress {
+  background: #ff9800;
+}
+
+/* Add reward modal styles */
+.add-reward-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.add-reward-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.add-reward-title {
+  color: #9c27b0;
+  margin: 0 0 10px 0;
+}
+
+.add-reward-description {
+  color: #666;
+  font-size: 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.primary-button {
+  background: #9c27b0;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.secondary-button {
+  background: #2196f3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.modal-close-button {
+  background: #666;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Notification styles */
+.undo-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: bold;
+  max-width: 400px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.notification-subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.undo-button {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.undo-button:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.brief-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 10000;
+  font-weight: bold;
+  font-size: 14px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Error message styles */
+.error-message {
+  color: red;
+  background: #ffebee;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+/* PWA banner text styles */
+.pwa-banner-title {
+  margin-bottom: 10px;
+}
+
+.pwa-banner-subtitle {
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* Instructions text styles */
+.instructions-title {
+  margin: 0 0 10px 0;
+  color: #1976d2;
+}
+
+.instructions-text {
+  margin: 0;
+  color: #333;
+}
+
+/* Delete reward button styles */
+.delete-reward-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(244, 67, 54, 0.8);
+  border: 1px solid rgba(244, 67, 54, 0.9);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 10;
+}
+
+.earned-reward-card:hover .delete-reward-button,
+.progress-reward-card:hover .delete-reward-button {
+  opacity: 1;
+}
+
+.delete-reward-button:hover {
+  background: rgba(244, 67, 54, 1);
+  transform: scale(1.1);
+}
+
+.delete-reward-button.progress {
+  background: rgba(244, 67, 54, 0.7);
+  border: 1px solid rgba(244, 67, 54, 0.8);
+}
+
+.delete-reward-button.progress:hover {
+  background: rgba(244, 67, 54, 0.9);
+}
+
+/* Set Target Modal */
+.set-target-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.set-target-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.set-target-title {
+  color: #333;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.set-target-description {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.target-info {
+  margin-top: 10px;
+  padding: 12px;
+  background: #f0f8ff;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+  color: #1976d2;
+  font-size: 14px;
+}
+
+.target-examples {
+  margin: 25px 0;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.target-examples-title {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.target-suggestion-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.target-suggestion-btn {
+  padding: 12px 16px;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #333;
+}
+
+.target-suggestion-btn:hover {
+  border-color: #2196f3;
+  background: #f0f8ff;
+  color: #1976d2;
+}
+
+.target-suggestion-btn:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+  .target-suggestion-buttons {
+    grid-template-columns: 1fr;
+  }
+}
