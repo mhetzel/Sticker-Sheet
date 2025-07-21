@@ -3,7 +3,7 @@
 
 // Default app configuration
 const DEFAULT_APP_CONFIG = {
-  rewards: {},
+  rewards: [],
   goals: [],
   target: 11
 };
@@ -71,24 +71,24 @@ function saveStoredData(data) {
 
 /**
  * Add an activity to a specific reward
- * @param {string} rewardName - Name of the reward
+ * @param {number} rewardIndex - Index of the reward
  * @param {string} activityDescription - Description of the completed activity
  * @returns {boolean} Success status
  */
-function addActivityToReward(rewardName, activityDescription) {
+function addActivityToReward(rewardIndex, activityDescription) {
   const data = getStoredData();
-  if (!data || !data.rewards[rewardName]) {
-    console.error('Invalid reward name or no data found');
+  if (!data || !data.rewards[rewardIndex]) {
+    console.error('Invalid reward index or no data found');
     return false;
   }
 
   // Initialize activity array if it doesn't exist
-  if (!data.rewards[rewardName].activity) {
-    data.rewards[rewardName].activity = [];
+  if (!data.rewards[rewardIndex].activity) {
+    data.rewards[rewardIndex].activity = [];
   }
 
   // Add the activity
-  data.rewards[rewardName].activity.push(activityDescription);
+  data.rewards[rewardIndex].activity.push(activityDescription);
 
   // Save back to localStorage
   return saveStoredData(data);
@@ -96,18 +96,18 @@ function addActivityToReward(rewardName, activityDescription) {
 
 /**
  * Remove an activity from a reward by index
- * @param {string} rewardName - Name of the reward
+ * @param {number} rewardIndex - Index of the reward
  * @param {number} activityIndex - Index of activity to remove
  * @returns {boolean} Success status
  */
-function removeActivityFromReward(rewardName, activityIndex) {
+function removeActivityFromReward(rewardIndex, activityIndex) {
   const data = getStoredData();
-  if (!data || !data.rewards[rewardName]) {
-    console.error('Invalid reward name or no data found');
+  if (!data || !data.rewards[rewardIndex]) {
+    console.error('Invalid reward index or no data found');
     return false;
   }
 
-  const activities = data.rewards[rewardName].activity;
+  const activities = data.rewards[rewardIndex].activity;
   if (!activities || activityIndex < 0 || activityIndex >= activities.length) {
     console.error('Invalid activity index');
     return false;
@@ -133,15 +133,64 @@ function addReward(rewardName) {
   }
 
   // Check if reward already exists
-  if (data.rewards[rewardName]) {
-    console.error('Reward already exists');
-    return false;
+  for (const reward of Object.keys(data.rewards)) {
+    if (reward === rewardName) {
+      console.error('Reward already exists');
+      return false;
+    }
   }
 
   // Add new reward
-  data.rewards[rewardName] = {
+  newReward = {
+    rewardName: rewardName,
     activity: []
   };
+
+  data.rewards.push(newReward);
+
+  return saveStoredData(data);
+}
+
+/**
+ * Remove a reward from the system
+ * @param {number} rewardIndex - Index of the reward to remove
+ * @returns {boolean} Success status
+ */
+function deleteReward(rewardIndex) {
+  const data = getStoredData();
+  if (!data) {
+    console.error('No data found');
+    return false;
+  }
+
+  if (rewardIndex < 0 || rewardIndex >= data.rewards.length) {
+    console.error('Invalid reward index');
+    return false;
+  }
+
+  // Remove the reward
+  data.rewards.splice(rewardIndex, 1);
+
+  return saveStoredData(data);
+}
+
+function updateReward(rewardIndex, newRewardName) {
+  const data = getStoredData();
+  if (!data || !data.rewards[rewardIndex]) {
+    console.error('Invalid reward index or no data found');
+    return false;
+  }
+
+    // Check if reward already exists
+  for (const reward of Object.keys(data.rewards)) {
+    if (reward === newRewardName) {
+      console.error('Reward already exists');
+      return false;
+    }
+  }
+
+  // Rename the reward
+  data.rewards[rewardIndex].rewardName = newRewardName;
 
   return saveStoredData(data);
 }
@@ -239,30 +288,6 @@ function updateGoal(goalIndex, newGoalName) {
 }
 
 /**
- * Remove a reward from the system
- * @param {string} rewardName - Name of the reward to remove
- * @returns {boolean} Success status
- */
-function removeReward(rewardName) {
-  const data = getStoredData();
-  if (!data) {
-    console.error('No data found');
-    return false;
-  }
-
-  // Check if reward exists
-  if (!data.rewards[rewardName]) {
-    console.error('Reward does not exist');
-    return false;
-  }
-
-  // Remove the reward
-  delete data.rewards[rewardName];
-
-  return saveStoredData(data);
-}
-
-/**
  * Clear all data and reset to defaults
  * @returns {boolean} Success status
  */
@@ -323,7 +348,8 @@ window.AppStorage = {
   deleteGoal,
   updateGoal,
   addReward,
-  removeReward,
+  deleteReward,
+  updateReward,
   resetToDefaults,
   getAppConfig,
   updateTarget

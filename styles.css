@@ -163,11 +163,11 @@ h1 {
   text-decoration: none;
 }
 
-.goals-list, .add-goal-section {
+.goals-list, .add-goal-section, .rewards-list, .add-reward-section {
   margin-bottom: 20px;
 }
 
-#new-goal-input {
+#new-goal-input, #new-reward-input {
   width: calc(100% - 22px);
   padding: 10px;
   margin-bottom: 10px;
@@ -175,7 +175,7 @@ h1 {
   border-radius: 4px;
 }
 
-.goal-item {
+.goal-item, .reward-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -186,12 +186,12 @@ h1 {
   border-left: 4px solid #667eea;
 }
 
-.goal-text {
+.goal-text, .reward-text {
   flex-grow: 1;
   margin-right: 10px;
 }
 
-.goal-edit-input {
+.goal-edit-input, .reward-edit-input {
   flex-grow: 1;
   margin-right: 10px;
   padding: 8px;
@@ -200,12 +200,12 @@ h1 {
   font-size: 14px;
 }
 
-.goal-actions {
+.goal-actions, .reward-actions {
   display: flex;
   gap: 8px;
 }
 
-.edit-goal-btn, .save-goal-btn, .cancel-goal-btn {
+.edit-goal-btn, .save-goal-btn, .cancel-goal-btn, .edit-reward-btn, .save-reward-btn, .cancel-reward-btn {
   background: #4caf50;
   color: white;
   border: none;
@@ -216,19 +216,19 @@ h1 {
   transition: background 0.3s ease;
 }
 
-.edit-goal-btn:hover, .save-goal-btn:hover {
+.edit-goal-btn:hover, .save-goal-btn:hover, .edit-reward-btn:hover, .save-reward-btn:hover {
   background: #45a049;
 }
 
-.cancel-goal-btn {
+.cancel-goal-btn, .cancel-reward-btn {
   background: #ff9800;
 }
 
-.cancel-goal-btn:hover {
+.cancel-goal-btn:hover, .cancel-reward-btn:hover {
   background: #e68900;
 }
 
-.delete-goal-btn {
+.delete-goal-btn, .delete-reward-btn {
   background: #ff6b6b;
   color: white;
   border: none;
@@ -239,16 +239,16 @@ h1 {
   transition: background 0.3s ease;
 }
 
-.delete-goal-btn:hover {
+.delete-goal-btn:hover, .delete-reward-btn:hover {
   background: #ff5252;
 }
 
-.add-goal-section {
+.add-goal-section, .add-reward-section {
   border-top: 1px solid #eee;
   padding-top: 20px;
 }
 
-.add-goal-section input {
+.add-goal-section input, .add-reward-section input {
   width: 70%;
   padding: 10px;
   border: 1px solid #ddd;
@@ -256,7 +256,7 @@ h1 {
   margin-right: 10px;
 }
 
-.add-goal-section button {
+.add-goal-section button, .add-reward-section button {
   background: #28a745;
   color: white;
   border: none;
@@ -266,9 +266,10 @@ h1 {
   transition: background 0.3s ease;
 }
 
-.add-goal-section button:hover {
+.add-goal-section button:hover, .add-reward-section button:hover {
   background: #218838;
 }
+
 
 @keyframes slideInRight {
   from {
