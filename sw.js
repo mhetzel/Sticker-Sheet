@@ -1,4 +1,8 @@
-const CACHE_NAME = 'goals-tracker-v2';
+var GHPATH = '/Sticker-Sheet';
+var APP_PREFIX = 'sspwa_';
+var VERSION = 'version_001';
+
+var CACHE_NAME = APP_PREFIX + VERSION
 const urlsToCache = [
   '/',
   '/index.html',
