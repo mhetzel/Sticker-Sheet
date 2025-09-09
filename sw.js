@@ -1,6 +1,6 @@
 var GHPATH = '/Sticker-Sheet';
 var APP_PREFIX = 'sspwa_';
-var VERSION = 'version_002';
+var VERSION = 'version_003';
 
 var CACHE_NAME = APP_PREFIX + VERSION
 const urlsToCache = [

@@ -18,8 +18,9 @@ function initializeAppStructure() {
     </div>
     
     <h1>🏆 Goals & Rewards Tracker</h1>
-    
-    <div class="instructions">
+
+    <div id="instructions-modal" class="instructions">
+      <span class="close" id="close-instructions">&times;</span>
       <h3 class="instructions-title">🎯 How to Use</h3>
       <p class="instructions-text">
         <strong>Click on any reward below</strong> → Select the goal you completed → Your progress updates instantly!
@@ -116,6 +117,12 @@ function setupEventListeners() {
     closeManageRewards.addEventListener('click', closeManageRewardsModal);
   }
 
+  // Close instructions
+  const closeInstructions = document.getElementById('close-instructions');
+  if (closeInstructions) {
+    closeInstructions.addEventListener('click', closeInstructionsModal);
+  }
+
   // Add new reward button in modal
   const addNewRewardBtn = document.getElementById('add-new-reward-btn');
   if (addNewRewardBtn) {
@@ -146,6 +153,8 @@ function initializeApp() {
 
     // Initialize PWA functionality
     initializePWA();
+
+    showInstructionsModal();
 
     // Initialize app data (either from localStorage or defaults)
     initializeAppData();
@@ -767,6 +776,21 @@ function showManageRewardsModal() {
 
 function closeManageRewardsModal() {
   const modal = document.getElementById('manage-rewards-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+
+function showInstructionsModal() {
+  const modal = document.getElementById('instructions-modal');
+  if (modal) {
+    modal.style.display = 'block';
+  }
+}
+
+function closeInstructionsModal() {
+  const modal = document.getElementById('instructions-modal');
   if (modal) {
     modal.style.display = 'none';
   }
