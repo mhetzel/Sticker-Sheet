@@ -5,7 +5,8 @@
 const DEFAULT_APP_CONFIG = {
   rewards: [],
   goals: [],
-  target: 11
+  target: 11,
+  showHelp: true
 };
 
 // Storage key for localStorage
@@ -51,6 +52,19 @@ function getStoredData() {
     console.error('Error reading from localStorage:', error);
     return null;
   }
+}
+
+function hideHelp() {
+  const data = getStoredData();
+  if (data) {
+    data.showHelp = false;
+    saveStoredData(data);
+  }
+}
+
+function shouldShowHelp() {
+  const data = getStoredData();
+  return data ? data.showHelp : DEFAULT_APP_CONFIG.showHelp;
 }
 
 /**
@@ -343,6 +357,8 @@ window.AppStorage = {
   getStoredData,
   saveStoredData,
   addActivityToReward,
+  shouldShowHelp,
+  hideHelp,
   removeActivityFromReward,
   addGoal,
   deleteGoal,

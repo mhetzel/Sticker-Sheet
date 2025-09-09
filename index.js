@@ -154,7 +154,9 @@ function initializeApp() {
     // Initialize PWA functionality
     initializePWA();
 
-    showInstructionsModal();
+    if (!AppStorage.shouldShowHelp()) {
+      closeInstructionsModal();
+    }
 
     // Initialize app data (either from localStorage or defaults)
     initializeAppData();
@@ -781,18 +783,11 @@ function closeManageRewardsModal() {
   }
 }
 
-
-function showInstructionsModal() {
-  const modal = document.getElementById('instructions-modal');
-  if (modal) {
-    modal.style.display = 'block';
-  }
-}
-
 function closeInstructionsModal() {
   const modal = document.getElementById('instructions-modal');
   if (modal) {
     modal.style.display = 'none';
+    AppStorage.hideHelp();
   }
 }
 
