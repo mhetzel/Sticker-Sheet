@@ -150,8 +150,8 @@ function initializeApp() {
     // Initialize app data (either from localStorage or defaults)
     initializeAppData();
 
-    // Load and display earned rewards
-    loadEarnedRewards();
+    // Load and display rewards
+    loadRewards();
 
     // Update target button text
     updateTargetButton();
@@ -266,7 +266,7 @@ function confirmGoalForReward(rewardIndex, rewardName, completedGoal) {
     closeGoalModal();
 
     // Refresh rewards display immediately
-    loadEarnedRewards();
+    loadRewards();
   } else {
     alert('Error adding activity to reward. Please try again.');
   }
@@ -397,8 +397,8 @@ function closeActivityHistoryModal() {
 }
 
 
-// Function to load and display earned rewards
-function loadEarnedRewards() {
+// Function to load and display rewards
+function loadRewards() {
   try {
     // Get data from localStorage
     const data = AppStorage.getStoredData();
@@ -437,6 +437,9 @@ function loadEarnedRewards() {
       }
     });
 
+    // sort in progressRewards by progress descending
+    progressRewards.sort((a, b) => b.progress - a.progress);
+
     createRewardsWindow(earnedRewards, progressRewards, target);
 
   } catch (error) {
@@ -466,40 +469,6 @@ function createRewardsWindow(earnedRewards, progressRewards, target) {
       </div>
     </div>
   `;
-
-  // Show earned rewards section
-  if (earnedRewards.length > 0) {
-    rewardsHTML += `
-      <div class="rewards-section">
-        <h3 class="rewards-section-title">✨ Earned Rewards (${earnedRewards.length})</h3>
-        <div class="rewards-grid">
-    `;
-
-    earnedRewards.forEach(reward => {
-      rewardsHTML += `
-        <div class="earned-reward-card" onclick="showActivityHistory('${reward.index}')">
-          <div class="reward-icon">🏆</div>
-          <div class="reward-name">
-            ${reward.name}
-          </div>
-          <div class="reward-status">
-            ✅ ${reward.activityCount}/${target} Complete!
-          </div>
-          <div class="reward-hint">
-            Click to view activity history
-          </div>
-          <div class="reward-history-icon">📋</div>
-          <button onclick="deleteReward('${reward.name}'); event.stopPropagation();" 
-                  class="delete-reward-button"
-                  title="Delete this reward">
-            🗑️
-          </button>
-        </div>
-      `;
-    });
-
-    rewardsHTML += '</div></div>';
-  }
 
   // Show progress rewards section
   if (progressRewards.length > 0) {
@@ -546,6 +515,40 @@ function createRewardsWindow(earnedRewards, progressRewards, target) {
     rewardsHTML += '</div></div>';
   }
 
+  // Show earned rewards section
+  if (earnedRewards.length > 0) {
+    rewardsHTML += `
+      <div class="rewards-section">
+        <h3 class="rewards-section-title">✨ Earned Rewards (${earnedRewards.length})</h3>
+        <div class="rewards-grid">
+    `;
+
+    earnedRewards.forEach(reward => {
+      rewardsHTML += `
+        <div class="earned-reward-card" onclick="showActivityHistory('${reward.index}')">
+          <div class="reward-icon">🏆</div>
+          <div class="reward-name">
+            ${reward.name}
+          </div>
+          <div class="reward-status">
+            ✅ ${reward.activityCount}/${target} Complete!
+          </div>
+          <div class="reward-hint">
+            Click to view activity history
+          </div>
+          <div class="reward-history-icon">📋</div>
+          <button onclick="deleteReward('${reward.name}'); event.stopPropagation();" 
+                  class="delete-reward-button"
+                  title="Delete this reward">
+            🗑️
+          </button>
+        </div>
+      `;
+    });
+
+    rewardsHTML += '</div></div>';
+  }
+
   // If no rewards at all
   if (earnedRewards.length === 0 && progressRewards.length === 0) {
     rewardsHTML += `
@@ -559,7 +562,7 @@ function createRewardsWindow(earnedRewards, progressRewards, target) {
   rewardsHTML += `
     <div class="rewards-actions">
       <div>
-        <button onclick="loadEarnedRewards()" class="refresh-button">
+        <button onclick="loadRewards()" class="refresh-button">
           🔄 Refresh Display
         </button>
       </div>
@@ -684,7 +687,7 @@ function confirmSetTarget() {
     updateTargetButton();
 
     // Refresh rewards display to show new progress calculations
-    loadEarnedRewards();
+    loadRewards();
 
     // Show success notification
     showTargetUpdatedNotification(newTarget);
@@ -816,7 +819,7 @@ function deleteRewardFromModal(rewardIndex, rewardName) {
     const success = AppStorage.deleteReward(rewardIndex);
     if (success) {
       populateCurrentRewards();
-      loadEarnedRewards();
+      loadRewards();
       showBriefMessage('🗑️ Reward deleted', '#ff9800');
     } else {
       showBriefMessage('❌ Error deleting reward', '#f44336');
@@ -858,7 +861,7 @@ function saveReward(index) {
   const success = AppStorage.updateReward(index, newRewardName);
   if (success) {
     populateCurrentRewards();
-    loadEarnedRewards();
+    loadRewards();
     showBriefMessage('✅ Reward updated', '#4caf50');
   } else {
     alert('Error updating reward. Please try again.');
@@ -946,7 +949,7 @@ function undoAddReward(rewardName) {
     showBriefMessage('🔄 Reward removed', '#ff9800');
 
     // Refresh rewards display
-    loadEarnedRewards();
+    loadRewards();
   } else {
     console.error('Cannot undo: failed to remove reward');
     showBriefMessage('❌ Error removing reward', '#f44336');
@@ -975,7 +978,7 @@ function deleteReward(rewardName) {
     showRewardDeletedNotification(rewardName, rewardBackup);
 
     // Refresh rewards display
-    loadEarnedRewards();
+    loadRewards();
   } else {
     showBriefMessage('❌ Error deleting reward', '#f44336');
   }
@@ -1053,7 +1056,7 @@ function undoDeleteReward(rewardName, encodedRewardBackup) {
         showBriefMessage('🔄 Reward restored', '#4caf50');
 
         // Refresh rewards display
-        loadEarnedRewards();
+        loadRewards();
       } else {
         showBriefMessage('❌ Error restoring reward data', '#f44336');
       }
@@ -1298,7 +1301,7 @@ function deleteActivity(rewardIndex, activityIndex) {
   AppStorage.removeActivityFromReward(rewardIndex, activityIndex);
   closeActivityHistoryModal();
   // Refresh display
-  loadEarnedRewards();
+  loadRewards();
 }
 
 
@@ -1367,7 +1370,7 @@ function undoLastActivity(rewardName, activityEntry) {
       showBriefMessage('🔄 Activity removed', '#ff9800');
 
       // Refresh display
-      loadEarnedRewards();
+      loadRewards();
     } else {
       console.error('Cannot undo: failed to remove activity');
     }
@@ -1399,7 +1402,7 @@ function refreshUI(options = {}) {
   } = options;
 
   if (refreshRewards) {
-    loadEarnedRewards();
+    loadRewards();
   }
 
   if (refreshGoalsModal) {
