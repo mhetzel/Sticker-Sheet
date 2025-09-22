@@ -38,21 +38,20 @@ function showGoalSelectionModal(selectedReward) {
         <div class="goal-buttons-grid">
     `;
 
+    const requiredCompleted = AppStorage.areRequiredGoalsCompletedToday(selectedReward);
     // Add goal buttons
     goals.forEach(goal => {
-      // If there are required goals, and not all are completed, only allow required goals to be added
-      let disabled = '';
-      let hint = '';
-      // if (requiredGoals.length > 0 && !requiredCompleted && !requiredGoals.includes(goal)) {
-      //   disabled = 'disabled';
-      //   hint = '<span class="goal-required-hint">(Complete required goals first)</span>';
-      // }
-      modalHTML += `
-        <button onclick="confirmGoalForReward(${selectedReward},'${currentRewardName}', '${goal.name}')" 
-                class="goal-button" ${disabled}>
-          🎯 ${goal.name} ${hint}
-        </button>
-      `;
+      // If there are required goals, and not all are completed, only show required goals
+      
+      const showGoal = requiredCompleted || goal.required;
+      if (showGoal) {
+        modalHTML += `
+          <button onclick="confirmGoalForReward(${selectedReward},'${currentRewardName}', '${goal.name}')" 
+                  class="goal-button">
+            🎯 ${goal.name}
+          </button>
+        `;
+      }
     });
 
     modalHTML += `
@@ -681,7 +680,6 @@ function undoDeleteReward(rewardName, encodedRewardBackup) {
 
     if (addSuccess) {
       // Restore the activities
-      // TODO make this better
       rewardBackup.activities.forEach((activity) => {
         AppStorage.addActivityToReward(rewardIndex, activity)
       })

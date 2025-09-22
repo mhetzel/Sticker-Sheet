@@ -229,9 +229,11 @@ function areRequiredGoalsCompletedToday(rewardIndex) {
   const requiredGoals = data.goals.filter(goal => goal.required);
   if (!requiredGoals.length) return true;
   const today = new Date().toISOString().split('T')[0];
-  // Check if each required goal has an activity for today in this reward
+  // Check if at least one required goal has an activity for today in this reward
+  // TODO future allow toggling hard requirement for all required activities to be done first
   const activities = data.rewards[rewardIndex].activity || [];
-  return requiredGoals.every(goal =>
+
+  return requiredGoals.some(goal =>
     activities.some(activity => activity === `${goal.name} completed on ${today}`)
   );
 }
