@@ -69,12 +69,14 @@ function initializeApp() {
     // Initialize PWA functionality
     initializePWA();
 
+    // Initialize app data (either from localStorage or defaults)
+    AppStorage.initialize();
+
     if (!AppStorage.shouldShowHelp()) {
       closeInstructionsModal();
     }
 
-    // Initialize app data (either from localStorage or defaults)
-    AppStorage.initialize();
+
 
     // add and init target button
     Target.initialize();

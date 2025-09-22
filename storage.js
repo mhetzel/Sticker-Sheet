@@ -178,6 +178,7 @@ function addReward(rewardName) {
  * @returns {boolean} Success status
  */
 function deleteReward(rewardIndex) {
+  console.log('Deleting reward at index:', rewardIndex);
   const data = getStoredData();
   if (!data) {
     console.error('No data found');
@@ -303,8 +304,8 @@ function updateGoal(goalIndex, newGoalName, isRequired) {
   const newGoal = { name: newGoalName, required: isRequired };
 
   // Check if the new goal name already exists (unless it's the same goal)
-  if (newGoal !== oldGoal && (!data.goals.some(g => g.name === newGoal.name && g.required === newGoal.required))) {
-    console.error('Goal name already exists');
+  if (data.goals.some(g => g.name === newGoal.name && g.required === newGoal.required)) {
+    console.error('Goal already exists');
     return false;
   }
 
@@ -373,11 +374,23 @@ function getTarget() {
   return data ? data.target : DEFAULT_APP_CONFIG.target;
 }
 
+function getGoals() {
+  const data = getStoredData();
+  return data ? data.goals : DEFAULT_APP_CONFIG.goals;
+}
+
+function getRewards() {
+  const data = getStoredData();
+  return data ? data.rewards : DEFAULT_APP_CONFIG.rewards;
+}
+
+
 // Export functions to global scope for use by index.js
 window.AppStorage = {
   addGoal,
   updateGoal,
   deleteGoal,
+  getGoals,
   addReward,
   deleteReward,
   updateReward,
@@ -387,7 +400,7 @@ window.AppStorage = {
   updateTarget,
   shouldShowHelp,
   hideHelp,
-  getStoredData,
+  getRewards,
   resetToDefaults,
   areRequiredGoalsCompletedToday,
   saveStoredData,

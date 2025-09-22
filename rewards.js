@@ -3,14 +3,10 @@
 function showGoalSelectionModal(selectedReward) {
   try {
     // Get current data from localStorage
-    const data = AppStorage.getStoredData();
-    if (!data) {
-      throw new Error('No app data found');
-    }
 
-    const goals = data.goals || [];
-    const rewards = data.rewards || [];
-    const target = data.target || 0;
+    const goals = AppStorage.getGoals();
+    const rewards = AppStorage.getRewards();
+    const target = AppStorage.getTarget();
     const currentReward = rewards[selectedReward];
     const currentRewardName = currentReward.rewardName;
     const currentProgress = currentReward && currentReward.activity ? currentReward.activity.length : 0;
@@ -47,14 +43,14 @@ function showGoalSelectionModal(selectedReward) {
       // If there are required goals, and not all are completed, only allow required goals to be added
       let disabled = '';
       let hint = '';
-      if (requiredGoals.length > 0 && !requiredCompleted && !requiredGoals.includes(goal)) {
-        disabled = 'disabled';
-        hint = '<span class="goal-required-hint">(Complete required goals first)</span>';
-      }
+      // if (requiredGoals.length > 0 && !requiredCompleted && !requiredGoals.includes(goal)) {
+      //   disabled = 'disabled';
+      //   hint = '<span class="goal-required-hint">(Complete required goals first)</span>';
+      // }
       modalHTML += `
-        <button onclick="confirmGoalForReward(${selectedReward},'${currentRewardName}', '${goal}')" 
+        <button onclick="confirmGoalForReward(${selectedReward},'${currentRewardName}', '${goal.name}')" 
                 class="goal-button" ${disabled}>
-          🎯 ${goal} ${hint}
+          🎯 ${goal.name} ${hint}
         </button>
       `;
     });
@@ -96,7 +92,7 @@ function confirmGoalForReward(rewardIndex, rewardName, completedGoal) {
 
   if (success) {
     // Show subtle notification with undo option
-    showUndoNotification(rewardName, completedGoal, activityEntry);
+    showUndoNotification(rewardName, rewardIndex, completedGoal, activityEntry);
 
     // Close modal and refresh displays
     closeGoalModal();
@@ -118,15 +114,15 @@ function closeGoalModal() {
 // Show activity history for a reward
 function showActivityHistory(rewardIndex) {
   try {
-    const data = AppStorage.getStoredData();
-    if (!data || !data.rewards[rewardIndex]) {
+    const rewards = AppStorage.getRewards();
+    if (!rewards || !rewards[rewardIndex]) {
       alert('No data found for this reward.');
       return;
     }
 
-    const reward = data.rewards[rewardIndex];
+    const reward = rewards[rewardIndex];
     const activities = reward.activity || [];
-    const target = data.target || 0;
+    const target = AppStorage.getTarget();
     const isEarned = activities.length >= target;
 
     // Create modal backdrop
@@ -236,15 +232,8 @@ function closeActivityHistoryModal() {
 // Function to load and display rewards
 function loadRewards() {
   try {
-    // Get data from localStorage
-    const data = AppStorage.getStoredData();
-    if (!data) {
-      console.error('No app data found in localStorage');
-      return;
-    }
-
-    const rewards = data.rewards || {};
-    const target = data.target || 0;
+    const rewards = AppStorage.getRewards();
+    const target = AppStorage.getTarget();
 
     // Calculate which rewards should be earned based on activity count vs target
     const earnedRewards = [];
@@ -373,7 +362,7 @@ function createRewardsWindow(earnedRewards, progressRewards, target) {
             Click to view activity history
           </div>
           <div class="reward-history-icon">📋</div>
-          <button onclick="deleteReward('${reward.name}'); event.stopPropagation();" 
+          <button onclick="internalDeleteReward('${reward.index}', '${reward.name}'); event.stopPropagation();" 
                   class="delete-reward-button"
                   title="Delete this reward">
             🗑️
@@ -434,12 +423,12 @@ function closeManageRewardsModal() {
 
 function populateCurrentRewards() {
   const rewardsList = document.getElementById('current-rewards-list');
-  const data = AppStorage.getStoredData();
-  if (!rewardsList || !data.rewards) return;
+  const rewards = AppStorage.getRewards();
+  if (!rewardsList || !rewards) return;
 
   rewardsList.innerHTML = '';
 
-  data.rewards.forEach((reward, index) => {
+  rewards.forEach((reward, index) => {
     const rewardName = reward.rewardName;
     rewardsList.innerHTML += `
       <div class="reward-item">
@@ -449,7 +438,7 @@ function populateCurrentRewards() {
           <button class="edit-reward-btn" onclick="editReward(${index})" id="edit-reward-btn-${index}">Edit</button>
           <button class="save-reward-btn" onclick="saveReward(${index})" id="save-reward-btn-${index}" style="display: none;">Save</button>
           <button class="cancel-reward-btn" onclick="cancelEditReward(${index})" id="cancel-reward-btn-${index}" style="display: none;">Cancel</button>
-          <button class="delete-reward-btn" onclick="deleteRewardFromModal(${index}, '${rewardName}')">Delete</button>
+          <button class="delete-reward-btn" onclick="internalDeleteReward(${index}, '${rewardName}')">Delete</button>
         </div>
       </div>
     `;
@@ -465,25 +454,13 @@ function addNewRewardFromModal() {
     return;
   }
   const success = AppStorage.addReward(newReward);
+  const rewardIndex = AppStorage.getRewards().length - 1;
   if (success) {
     input.value = '';
     populateCurrentRewards();
-    showRewardAddedNotification(newReward);
+    showRewardAddedNotification(newReward, rewardIndex);
   } else {
     showBriefMessage('❌ Error adding reward. This reward may already exist.', '#f44336');
-  }
-}
-
-function deleteRewardFromModal(rewardIndex, rewardName) {
-  if (confirm(`Are you sure you want to delete the reward "${rewardName}"?`)) {
-    const success = AppStorage.deleteReward(rewardIndex);
-    if (success) {
-      populateCurrentRewards();
-      loadRewards();
-      showBriefMessage('🗑️ Reward deleted', '#ff9800');
-    } else {
-      showBriefMessage('❌ Error deleting reward', '#f44336');
-    }
   }
 }
 
@@ -511,9 +488,9 @@ function saveReward(index) {
     return;
   }
 
-  const data = AppStorage.getStoredData();
-  oldRewardName = data.rewards[index].rewardName
-  if (newRewardName !== oldRewardName && data.rewards[newRewardName]) {
+  const rewards = AppStorage.getRewards();
+  oldRewardName = rewards[index].rewardName
+  if (newRewardName !== oldRewardName && rewards[newRewardName]) {
     alert('A reward with this name already exists');
     return;
   }
@@ -544,7 +521,7 @@ function cancelEditReward(index, rewardName) {
 }
 
 // Reward addition notification system
-function showRewardAddedNotification(rewardName) {
+function showRewardAddedNotification(rewardName, rewardIndex) {
   // Remove any existing notification
   const existingNotification = document.getElementById('reward-added-notification');
   if (existingNotification) {
@@ -561,7 +538,7 @@ function showRewardAddedNotification(rewardName) {
       <div class="notification-title">✅ Reward Added</div>
       <div class="notification-subtitle">${rewardName}</div>
     </div>
-    <button onclick="undoAddReward('${rewardName}')" 
+    <button onclick="undoAddReward(${rewardIndex})" 
             class="undo-button">
       UNDO
     </button>
@@ -582,21 +559,21 @@ function showRewardAddedNotification(rewardName) {
   }, 5000);
 }
 
-function undoAddReward(rewardName) {
-  const data = AppStorage.getStoredData();
-  if (!data || !data.rewards) {
+function undoAddReward(rewardIndex) {
+  const rewards = AppStorage.getRewards();
+  if (!rewards) {
     console.error('Cannot undo: rewards not found');
     return;
   }
 
   // Check if reward exists
-  if (!data.rewards[rewardName]) {
+  if (!rewards[rewardIndex]) {
     console.error('Cannot undo: reward not found');
     return;
   }
 
   // Use storage.js function to remove reward
-  const success = AppStorage.deleteReward(rewardName);
+  const success = AppStorage.deleteReward(rewardIndex);
 
   if (success) {
     // Hide notification
@@ -617,23 +594,24 @@ function undoAddReward(rewardName) {
 }
 
 // Function to delete a reward with notification and undo
-function deleteReward(rewardName) {
-  const data = AppStorage.getStoredData();
-  if (!data || !data.rewards[rewardName]) {
+function internalDeleteReward(rewardIndex, rewardName) {
+  const rewards = AppStorage.getRewards();
+  if (!rewards || !rewards[rewardIndex]) {
     showBriefMessage('❌ Reward not found', '#f44336');
     return;
   }
 
-  const reward = data.rewards[rewardName];
+  const reward = rewards[rewardIndex];
   const activityCount = reward.activity ? reward.activity.length : 0;
 
   // Store reward data for potential undo
   const rewardBackup = JSON.parse(JSON.stringify(reward));
 
   // Remove the reward
-  const success = AppStorage.deleteReward(rewardName);
-
+  const success = AppStorage.deleteReward(rewardIndex);
+  console.log('deleted reward')
   if (success) {
+    console.log('trying to show notification')
     // Show notification with undo option
     showRewardDeletedNotification(rewardName, rewardBackup);
 
@@ -690,20 +668,23 @@ function undoDeleteReward(rewardName, encodedRewardBackup) {
     const rewardBackup = JSON.parse(decodeURIComponent(encodedRewardBackup));
 
     // Check if reward already exists (shouldn't, but safety check)
-    const data = AppStorage.getStoredData();
-    if (data && data.rewards[rewardName]) {
+    rewards = AppStorage.getRewards();
+    if (rewards && rewards[rewardName]) {
       showBriefMessage('❌ Cannot restore: reward already exists', '#f44336');
       return;
     }
 
     // Add the reward back
     const addSuccess = AppStorage.addReward(rewardName);
+    rewards = AppStorage.getRewards();
+    const rewardIndex = rewards.length - 1;
 
     if (addSuccess) {
       // Restore the activities
-      const currentData = AppStorage.getStoredData();
-      currentData.rewards[rewardName] = rewardBackup;
-      const saveSuccess = AppStorage.saveStoredData(currentData);
+      // TODO make this better
+      rewardBackup.activities.forEach((activity) => {
+        AppStorage.addActivityToReward(rewardIndex, activity)
+      })
 
       if (saveSuccess) {
         // Hide notification
@@ -729,20 +710,20 @@ function undoDeleteReward(rewardName, encodedRewardBackup) {
   }
 }
 
-function undoLastActivity(rewardName, activityEntry) {
-  const data = AppStorage.getStoredData();
-  if (!data || !data.rewards[rewardName]) {
+function undoLastActivity(rewardIndex, activityEntry) {
+  const rewards = AppStorage.getRewards();
+  if (!rewards || !rewards[rewardIndex]) {
     console.error('Cannot undo: reward not found');
     return;
   }
 
   // Find the activity index
-  const activities = data.rewards[rewardName].activity;
+  const activities = rewards[rewardIndex].activity;
   const activityIndex = activities.findIndex(activity => activity === activityEntry);
 
   if (activityIndex !== -1) {
     // Use storage.js function to remove activity
-    const success = AppStorage.removeActivityFromReward(rewardName, activityIndex);
+    const success = AppStorage.removeActivityFromReward(rewardIndex, activityIndex);
 
     if (success) {
       // Hide notification
@@ -765,7 +746,7 @@ function undoLastActivity(rewardName, activityEntry) {
 }
 
 // Undo notification system
-function showUndoNotification(rewardName, completedGoal, activityEntry) {
+function showUndoNotification(rewardName, rewardIndex, completedGoal, activityEntry) {
   // Remove any existing notification
   const existingNotification = document.getElementById('undo-notification');
   if (existingNotification) {
@@ -782,7 +763,7 @@ function showUndoNotification(rewardName, completedGoal, activityEntry) {
       <div class="notification-title">✅ Added to ${rewardName}</div>
       <div class="notification-subtitle">${completedGoal}</div>
     </div>
-    <button onclick="undoLastActivity('${rewardName}', '${activityEntry}')" 
+    <button onclick="undoLastActivity(${rewardIndex}, '${activityEntry}')" 
             class="undo-button">
       UNDO
     </button>
@@ -831,19 +812,19 @@ function initialize() {
   // Manage rewards button
   const manageRewardsBtn = document.getElementById('manage-rewards-btn');
   if (manageRewardsBtn) {
-    manageRewardsBtn.addEventListener('click', Rewards.showManageRewardsModal);
+    manageRewardsBtn.addEventListener('click', showManageRewardsModal);
   }
 
   // Close manage rewards modal
   const closeManageRewards = document.getElementById('close-manage-rewards');
   if (closeManageRewards) {
-    closeManageRewards.addEventListener('click', Rewards.closeManageRewardsModal);
+    closeManageRewards.addEventListener('click', closeManageRewardsModal);
   }
 
   // Add new reward button in modal
   const addNewRewardBtn = document.getElementById('add-new-reward-btn');
   if (addNewRewardBtn) {
-    addNewRewardBtn.addEventListener('click', Rewards.addNewRewardFromModal);
+    addNewRewardBtn.addEventListener('click', addNewRewardFromModal);
   }
 
 }

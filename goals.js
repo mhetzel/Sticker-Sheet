@@ -18,18 +18,23 @@ function closeManageGoalsModal() {
 
 function populateCurrentGoals() {
     const goalsList = document.getElementById('current-goals-list');
-    const data = AppStorage.getStoredData();
+    const goals = AppStorage.getGoals();
 
-    if (!goalsList || !data.goals) return;
+    if (!goalsList || !goals) return;
 
     goalsList.innerHTML = '';
 
-    data.goals.forEach((goal, index) => {
+    // todo add a required highlighting to all required goals
+    
+
+    goals.forEach((goal, index) => {
         const goalItem = document.createElement('div');
+        goalText = goal.name + (goal.required ? ' (Required)' : '');
         goalItem.className = 'goal-item';
         goalItem.innerHTML = `
-            <span class="goal-text" id="goal-text-${index}">${goal}</span>
-            <input type="text" class="goal-edit-input" id="goal-edit-${index}" value="${goal}" style="display: none;">
+            <span class="goal-text" id="goal-text-${index}">${goalText}</span>
+            <input type="text" class="goal-edit-input" id="goal-edit-${index}" value="${goal.name}" style="display: none;">
+            <input type="checkbox" class="goal-required-checkbox" id="goal-required-${index}" ${goal.required ? 'checked' : ''}  style="display: none; />
             <div class="goal-actions">
                 <button class="edit-goal-btn" onclick="editGoal(${index})" id="edit-btn-${index}">Edit</button>
                 <button class="save-goal-btn" onclick="saveGoal(${index})" id="save-btn-${index}" style="display: none;">Save</button>
@@ -43,7 +48,9 @@ function populateCurrentGoals() {
 
 function addNewGoal() {
     const input = document.getElementById('new-goal-input');
+    const requiredCheckbox = document.getElementById('new-goal-required');
     const newGoal = input.value.trim();
+    const isRequired = requiredCheckbox.checked;
 
     if (!newGoal) {
         showBriefMessage('⚠️ Please enter a goal name', '#ff9800');
@@ -51,7 +58,7 @@ function addNewGoal() {
         return;
     }
 
-    const success = AppStorage.addGoal(newGoal);
+    const success = AppStorage.addGoal(newGoal, isRequired);
 
     if (success) {
         // Clear input and refresh the goals list
@@ -65,10 +72,10 @@ function addNewGoal() {
 }
 
 function deleteGoal(goalIndex) {
-    const data = AppStorage.getStoredData();
-    const goalToDelete = data.goals[goalIndex];
+    const goals = AppStorage.getGoals();
+    const goalToDelete = goals[goalIndex];
 
-    if (confirm(`Are you sure you want to delete the goal "${goalToDelete}"?\n\nThis will also remove this goal from any reward activities where it was used.`)) {
+    if (confirm(`Are you sure you want to delete the goal "${goalToDelete.name}"?\n\nThis will also remove this goal from any reward activities where it was used.`)) {
         // Use storage.js function to delete goal
         const success = AppStorage.deleteGoal(goalIndex);
 
@@ -85,6 +92,7 @@ function deleteGoal(goalIndex) {
 function editGoal(goalIndex) {
     const goalText = document.getElementById(`goal-text-${goalIndex}`);
     const goalInput = document.getElementById(`goal-edit-${goalIndex}`);
+    const goalRequired = document.getElementById(`goal-required-${goalIndex}`);
     const editBtn = document.getElementById(`edit-btn-${goalIndex}`);
     const saveBtn = document.getElementById(`save-btn-${goalIndex}`);
     const cancelBtn = document.getElementById(`cancel-btn-${goalIndex}`);
@@ -93,6 +101,7 @@ function editGoal(goalIndex) {
     goalText.style.display = 'none';
     editBtn.style.display = 'none';
     goalInput.style.display = 'inline-block';
+    goalRequired.style.display = 'inline-block';
     saveBtn.style.display = 'inline-block';
     cancelBtn.style.display = 'inline-block';
 
@@ -103,29 +112,32 @@ function editGoal(goalIndex) {
 
 function saveGoal(goalIndex) {
     const goalInput = document.getElementById(`goal-edit-${goalIndex}`);
+    const goalRequired = document.getElementById(`goal-required-${goalIndex}`);
     const newGoalText = goalInput.value.trim();
+    const isRequired = goalRequired.checked;
 
     if (!newGoalText) {
         alert('Goal cannot be empty');
         return;
     }
 
-    const data = AppStorage.getStoredData();
-    const oldGoal = data.goals[goalIndex];
+    const goals = AppStorage.getGoals();
+    const oldGoal = goals[goalIndex];
 
     // Check if the new goal name already exists (unless it's the same goal)
-    if (newGoalText !== oldGoal && data.goals.includes(newGoalText)) {
-        alert('A goal with this name already exists');
+    if (goals.some(g => g.name === newGoalText && g.required === isRequired)) {
+        alert('A goal with this configuration already exists');
         return;
     }
 
     // Use storage.js function to update goal
-    const success = AppStorage.updateGoal(goalIndex, newGoalText);
+    const success = AppStorage.updateGoal(goalIndex, newGoalText, isRequired);
 
     if (success) {
         // Refresh the goals list and rewards display
         refreshUI({ refreshRewards: true, refreshGoalsModal: true });
         console.log('Goal updated:', oldGoal, '->', newGoalText);
+        console.log('Goal updated:', oldGoal.required, '->', isRequired);
     } else {
         alert('Error updating goal. Please try again.');
     }
@@ -134,18 +146,21 @@ function saveGoal(goalIndex) {
 function cancelEditGoal(goalIndex) {
     const goalText = document.getElementById(`goal-text-${goalIndex}`);
     const goalInput = document.getElementById(`goal-edit-${goalIndex}`);
+    const goalRequired = document.getElementById(`goal-required-${goalIndex}`);
     const editBtn = document.getElementById(`edit-btn-${goalIndex}`);
     const saveBtn = document.getElementById(`save-btn-${goalIndex}`);
     const cancelBtn = document.getElementById(`cancel-btn-${goalIndex}`);
 
     // Reset input to original value
-    const data = AppStorage.getStoredData();
-    goalInput.value = data.goals[goalIndex];
+    const data = AppStorage.getGoals();
+    goalInput.value = data[goalIndex].name;
+    goalRequired.checked = data[goalIndex].required;
 
     // Show text and edit button, hide input and save/cancel buttons
     goalText.style.display = 'inline';
     editBtn.style.display = 'inline-block';
     goalInput.style.display = 'none';
+    goalRequired.style.display = 'none';
     saveBtn.style.display = 'none';
     cancelBtn.style.display = 'none';
 }
@@ -200,6 +215,9 @@ function initialize() {
         <div class="add-goal-section">
           <h3>Add New Goal</h3>
           <input type="text" id="new-goal-input" placeholder="Enter new goal (e.g., '15 squats')" />
+          <label style="margin-left:8px;">
+            <input type="checkbox" id="new-goal-required" /> Required
+          </label>
           <button id="add-new-goal-btn">Add Goal</button>
         </div>
       </div>
