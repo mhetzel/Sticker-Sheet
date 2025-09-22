@@ -19,10 +19,10 @@ const STORAGE_KEY = 'rewardTrackerData';
 function initialize() {
   try {
     const storedData = localStorage.getItem(STORAGE_KEY);
-
+    parsedData = { ...DEFAULT_APP_CONFIG };
     if (storedData) {
       console.log('Loading data from localStorage');
-      const parsedData = JSON.parse(storedData);
+      parsedData = JSON.parse(storedData);
       if (parsedData.goals && typeof parsedData.goals[0] === 'string') 
       {
         oldGoals = parsedData.goals;
@@ -36,8 +36,6 @@ function initialize() {
         console.error('Invalid goals format - resetting to default');
         parsedData = { ...DEFAULT_APP_CONFIG };
       }
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
     } else {
       console.log('First time load - using default configuration');
       console.log('Default data stored in localStorage');
@@ -46,7 +44,7 @@ function initialize() {
     console.error('Error initializing app data:', error);
     console.log('Falling back to default configuration');
   }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_APP_CONFIG }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
 }
 
 /**
