@@ -16,28 +16,37 @@ const STORAGE_KEY = 'rewardTrackerData';
  * Initialize app data from localStorage or return defaults
  * @returns {Object} App data object with rewards, goals, and target
  */
-function initializeAppData() {
+function initialize() {
   try {
     const storedData = localStorage.getItem(STORAGE_KEY);
 
     if (storedData) {
       console.log('Loading data from localStorage');
-      return JSON.parse(storedData);
+      const parsedData = JSON.parse(storedData);
+      if (parsedData.goals && typeof parsedData.goals[0] === 'string') 
+      {
+        oldGoals = parsedData.goals;
+        newGoals = oldGoals.map(goal => ({ name: goal, required: false }));
+        parsedData.goals = newGoals;
+        console.log('Migrated old goals format to new format');
+      }
+        
+      // Validate structure
+      if (!Array.isArray(parsedData.goals) || !parsedData.goals.every(goal => typeof goal === 'object' && goal.name && typeof goal.required === 'boolean')) {
+        console.error('Invalid goals format - resetting to default');
+        parsedData = { ...DEFAULT_APP_CONFIG };
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
     } else {
       console.log('First time load - using default configuration');
-      const data = { ...DEFAULT_APP_CONFIG };
-
-      // Store in localStorage for future use
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       console.log('Default data stored in localStorage');
-
-      return data;
     }
   } catch (error) {
     console.error('Error initializing app data:', error);
     console.log('Falling back to default configuration');
-    return { ...DEFAULT_APP_CONFIG };
   }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_APP_CONFIG }));
 }
 
 /**
@@ -147,15 +156,15 @@ function addReward(rewardName) {
   }
 
   // Check if reward already exists
-  for (const reward of Object.keys(data.rewards)) {
-    if (reward === rewardName) {
+  for (const reward of data.rewards) {
+    if (reward.rewardName === rewardName) {
       console.error('Reward already exists');
       return false;
     }
   }
 
   // Add new reward
-  newReward = {
+  const newReward = {
     rewardName: rewardName,
     activity: []
   };
@@ -195,18 +204,37 @@ function updateReward(rewardIndex, newRewardName) {
     return false;
   }
 
-    // Check if reward already exists
-  for (const reward of Object.keys(data.rewards)) {
-    if (reward === newRewardName) {
+  // Check if reward already exists
+  for (let i = 0; i < data.rewards.length; i++) {
+    if (i !== rewardIndex && data.rewards[i].rewardName === newRewardName) {
       console.error('Reward already exists');
       return false;
     }
   }
 
-  // Rename the reward
+  // Update the reward name
   data.rewards[rewardIndex].rewardName = newRewardName;
-
   return saveStoredData(data);
+}
+
+/**
+ * Check if required goals for a reward are completed for today
+ * @param {number} rewardIndex - Index of the reward
+ * @returns {boolean} True if all required goals are completed for today
+ */
+function areRequiredGoalsCompletedToday(rewardIndex) {
+  const data = getStoredData();
+  if (!data || !data.rewards[rewardIndex]) {
+    return false;
+  }
+  const requiredGoals = data.goals.filter(goal => goal.required);
+  if (!requiredGoals.length) return true;
+  const today = new Date().toISOString().split('T')[0];
+  // Check if each required goal has an activity for today in this reward
+  const activities = data.rewards[rewardIndex].activity || [];
+  return requiredGoals.every(goal =>
+    activities.some(activity => activity === `${goal.name} completed on ${today}`)
+  );
 }
 
 /**
@@ -214,21 +242,18 @@ function updateReward(rewardIndex, newRewardName) {
  * @param {string} goalName - Name of the new goal
  * @returns {boolean} Success status
  */
-function addGoal(goalName) {
+function addGoal(goalName, isRequired = false) {
   const data = getStoredData();
   if (!data) {
     console.error('No data found');
     return false;
   }
 
-  // Check if goal already exists
-  if (data.goals.includes(goalName)) {
-    console.error('Goal already exists');
-    return false;
-  }
+  const goal = { name: goalName, required: isRequired };
 
-  // Add new goal
-  data.goals.push(goalName);
+  if (!data.goals.some(g => g.name === goal.name && g.required === goal.required)) {
+    data.goals.push(goal);
+  }
 
   return saveStoredData(data);
 }
@@ -268,7 +293,7 @@ function deleteGoal(goalIndex) {
  * @param {string} newGoalName - New name for the goal
  * @returns {boolean} Success status
  */
-function updateGoal(goalIndex, newGoalName) {
+function updateGoal(goalIndex, newGoalName, isRequired) {
   const data = getStoredData();
   if (!data || goalIndex < 0 || goalIndex >= data.goals.length) {
     console.error('Invalid goal index or no data found');
@@ -277,14 +302,16 @@ function updateGoal(goalIndex, newGoalName) {
 
   const oldGoal = data.goals[goalIndex];
 
+  const newGoal = { name: newGoalName, required: isRequired };
+
   // Check if the new goal name already exists (unless it's the same goal)
-  if (newGoalName !== oldGoal && data.goals.includes(newGoalName)) {
+  if (newGoal !== oldGoal && (!data.goals.some(g => g.name === newGoal.name && g.required === newGoal.required))) {
     console.error('Goal name already exists');
     return false;
   }
 
   // Update the goal in the data
-  data.goals[goalIndex] = newGoalName;
+  data.goals[goalIndex] = newGoal;
 
   // Update this goal in all reward activities where it was used
   Object.keys(data.rewards).forEach(rewardName => {
@@ -343,33 +370,28 @@ function updateTarget(newTarget) {
  * Get app configuration (target, etc.)
  * @returns {Object} Configuration object
  */
-function getAppConfig() {
+function getTarget() {
   const data = getStoredData();
-  return data ? {
-    target: data.target || DEFAULT_APP_CONFIG.target,
-    goalsCount: data.goals ? data.goals.length : 0,
-    rewardsCount: data.rewards ? Object.keys(data.rewards).length : 0
-  } : DEFAULT_APP_CONFIG;
+  return data ? data.target : DEFAULT_APP_CONFIG.target;
 }
 
 // Export functions to global scope for use by index.js
 window.AppStorage = {
-  getStoredData,
-  saveStoredData,
-  addActivityToReward,
-  shouldShowHelp,
-  hideHelp,
-  removeActivityFromReward,
   addGoal,
-  deleteGoal,
   updateGoal,
+  deleteGoal,
   addReward,
   deleteReward,
   updateReward,
+  removeActivityFromReward,
+  addActivityToReward,
+  getTarget,
+  updateTarget,
+  shouldShowHelp,
+  hideHelp,
+  getStoredData,
   resetToDefaults,
-  getAppConfig,
-  updateTarget
+  areRequiredGoalsCompletedToday,
+  saveStoredData,
+  initialize
 };
-
-// Also expose initializeAppData globally
-window.initializeAppData = initializeAppData;
