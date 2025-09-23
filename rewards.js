@@ -84,7 +84,8 @@ function showGoalSelectionModal(selectedReward) {
 
 function confirmGoalForReward(rewardIndex, rewardName, completedGoal) {
   // Create activity entry with current date
-  const activityEntry = `${completedGoal} completed on ${new Date().toISOString().split('T')[0]}`;
+  const today = new Date().toLocaleDateString('en-CA');
+  const activityEntry = `${completedGoal} completed on ${today}`;
 
   // Add activity directly to the main app data
   const success = AppStorage.addActivityToReward(rewardIndex, activityEntry);
