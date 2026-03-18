@@ -256,6 +256,7 @@ function deleteBankActivity(activityIndex) {
 function showBankActivityHistory() {
   const activities = AppStorage.getActivities();
   const target = AppStorage.getTarget();
+
   const isEarned = activities.length >= target;
   const spendable = activities.length > 0;
 

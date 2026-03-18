@@ -26,8 +26,9 @@ function initialize() {
       parsedData = JSON.parse(storedData);
               
       // Validate structure
-      if (!Array.isArray(parsedData.goals) || !parsedData.goals.every(goal => typeof goal === 'object' && goal.name && typeof goal.required === 'boolean')) {
-        console.error('Invalid goals format - resetting to default');
+      if (!Array.isArray(parsedData.goals) || !parsedData.goals.every(goal => typeof goal === 'object' && goal.name && typeof goal.required === 'boolean') ||
+          !Array.isArray(parsedData.activities)) {
+        console.error('Invalid goals or activities format - resetting to default');
         parsedData = { ...DEFAULT_APP_CONFIG };
       }
     } else {
@@ -515,7 +516,7 @@ function getRewards() {
 
 function getActivities() {
   const data = getStoredData();
-  return data ? data.activities : DEFAULT_APP_CONFIG.activities;
+  return data && data.activities ? data.activities : DEFAULT_APP_CONFIG.activities;
 }
 
 
