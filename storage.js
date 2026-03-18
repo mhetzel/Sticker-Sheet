@@ -6,6 +6,7 @@ const DEFAULT_APP_CONFIG = {
   rewards: [],
   goals: [],
   target: 11,
+  activities: [],
   showHelp: true
 };
 
@@ -23,14 +24,7 @@ function initialize() {
     if (storedData) {
       console.log('Loading data from localStorage');
       parsedData = JSON.parse(storedData);
-      if (parsedData.goals && typeof parsedData.goals[0] === 'string') 
-      {
-        oldGoals = parsedData.goals;
-        newGoals = oldGoals.map(goal => ({ name: goal, required: false }));
-        parsedData.goals = newGoals;
-        console.log('Migrated old goals format to new format');
-      }
-        
+              
       // Validate structure
       if (!Array.isArray(parsedData.goals) || !parsedData.goals.every(goal => typeof goal === 'object' && goal.name && typeof goal.required === 'boolean')) {
         console.error('Invalid goals format - resetting to default');
@@ -88,6 +82,110 @@ function saveStoredData(data) {
     console.error('Error saving to localStorage:', error);
     return false;
   }
+}
+
+/**
+ * Add an activity to bank
+ * @param {string} activityDescription - Description of the completed activity
+ * @returns {boolean} Success status
+ */
+function addActivityToBank(activityDescription) {
+  const data = getStoredData();
+  if (!data) {
+    console.error('No data found');
+    return false;
+  }
+
+  // Initialize activities array if it doesn't exist
+  if (!data.activities) {
+    data.activities = [];
+  }
+
+  // Add the activity
+  data.activities.push(activityDescription);
+
+  // Save back to localStorage
+  return saveStoredData(data);
+}
+
+/**
+ * remove activity from bank by index
+ * @param {number} activityIndex - Index of the activity to remove
+ * @returns {boolean} Success status
+ */
+function removeActivityFromBank(activityIndex) {
+  const data = getStoredData();
+  if (!data || !data.activities || activityIndex < 0 || activityIndex >= data.activities.length) {
+    console.error('Invalid activity index or no data found');
+    return false;
+  }
+
+  // Remove the activity
+  data.activities.splice(activityIndex, 1);
+
+  // Save back to localStorage
+  return saveStoredData(data);
+}
+
+/**
+ * Spend an activity from the bank on a reward
+ * @param {string} rewardName - Name of the reward to spend on
+ * @returns {boolean} Success status
+ */
+function spendActivityOnReward(rewardName) {
+  const data = getStoredData();
+
+  // Find the reward index by name
+  const rewardIndex = data.rewards.findIndex(reward => reward.rewardName === rewardName);
+
+  if (!data || !data.rewards[rewardIndex]) {
+    console.error('Invalid reward index or no data found');
+    return false;
+  }
+
+  // Initialize activity array if it doesn't exist
+  if (!data.rewards[rewardIndex].activity) {
+    data.rewards[rewardIndex].activity = [];
+  }
+
+  // move all banked activity to the reward til the target is hit for the reward or we run out of banked activity
+  while (data.activities.length > 0 && data.rewards[rewardIndex].activity.length < data.target) {
+    const activity = data.activities.shift(); // Remove the first activity from the bank
+    data.rewards[rewardIndex].activity.push(activity); // Add it to the reward
+  }
+
+  // Save back to localStorage
+  return saveStoredData(data);
+}
+
+/**
+ * Move activity from reward back to the bank (undo spending)
+ * @param {number} rewardIndex - Index of the reward
+ * @param {number} activityIndex - Index of the activity in the reward to move back to bank
+ * @returns {boolean} Success status
+ */
+function moveActivityBackToBank(rewardIndex, activityIndex) {
+  const data = getStoredData();
+  if (!data || !data.rewards[rewardIndex]) {
+    console.error('Invalid reward index or no data found');
+    return false;
+  }
+
+  const activities = data.rewards[rewardIndex].activity;
+  if (!activities || activityIndex < 0 || activityIndex >= activities.length) {
+    console.error('Invalid activity index');
+    return false;
+  }
+
+  // Remove the activity from the reward and add it back to the bank
+  const activity = activities.splice(activityIndex, 1)[0];
+  if (!data.activities) {
+    data.activities = [];
+  }
+  data.activities.push(activity);
+
+  // Save back to localStorage
+  return saveStoredData(data);
 }
 
 /**
@@ -217,11 +315,36 @@ function updateReward(rewardIndex, newRewardName) {
 }
 
 /**
+ * Check if required goals for today are completed in the bank
+ * @returns {boolean} True if at least one required goal is completed for today
+ */
+function areRequiredGoalsCompletedToday() {
+  const data = getStoredData();
+  if (!data) {
+    return false;
+  }
+  const requiredGoals = data.goals.filter(goal => goal.required);
+  if (!requiredGoals.length) return true;
+  const today = new Date().toLocaleDateString('en-CA');
+  // Check if at least one required goal has an activity for today in the bank
+  // TODO future allow toggling hard requirement for all required activities to be done first
+  const activities = data.activities || [];
+
+  requiredGoals.forEach(goal => {
+    console.log(`looking for: ${goal.name} completed on ${today}`);
+  });
+
+  return requiredGoals.some(goal =>
+    activities.some(activity => activity === `${goal.name} completed on ${today}`)
+  );
+}
+
+/**
  * Check if required goals for a reward are completed for today
  * @param {number} rewardIndex - Index of the reward
  * @returns {boolean} True if all required goals are completed for today
  */
-function areRequiredGoalsCompletedToday(rewardIndex) {
+function areRequiredGoalsCompletedTodayForReward(rewardIndex) {
   const data = getStoredData();
   if (!data || !data.rewards[rewardIndex]) {
     return false;
@@ -390,6 +513,11 @@ function getRewards() {
   return data ? data.rewards : DEFAULT_APP_CONFIG.rewards;
 }
 
+function getActivities() {
+  const data = getStoredData();
+  return data ? data.activities : DEFAULT_APP_CONFIG.activities;
+}
+
 
 // Export functions to global scope for use by index.js
 window.AppStorage = {
@@ -408,7 +536,13 @@ window.AppStorage = {
   hideHelp,
   getRewards,
   resetToDefaults,
-  areRequiredGoalsCompletedToday,
+  areRequiredGoalsCompletedTodayForReward,
   saveStoredData,
-  initialize
+  initialize,
+  addActivityToBank,
+  removeActivityFromBank,
+  spendActivityOnReward,
+  moveActivityBackToBank,
+  getActivities,
+  areRequiredGoalsCompletedToday
 };

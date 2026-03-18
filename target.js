@@ -172,7 +172,7 @@ function initialize() {
   const setTargetBtn = document.getElementById('set-target-btn');
   if (setTargetBtn) {
     const currentTarget = AppStorage.getTarget();
-    setTargetBtn.textContent = `🎯 Set Target (${currentTarget})`;
+    setTargetBtn.textContent = `🎯 Set Target`;
     setTargetBtn.addEventListener('click', showSetTargetModal);
   }
 }

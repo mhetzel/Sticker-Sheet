@@ -38,7 +38,7 @@ function showGoalSelectionModal(selectedReward) {
         <div class="goal-buttons-grid">
     `;
 
-    const requiredCompleted = AppStorage.areRequiredGoalsCompletedToday(selectedReward);
+    const requiredCompleted = AppStorage.areRequiredGoalsCompletedTodayForReward(selectedReward);
     // Add goal buttons
     goals.forEach(goal => {
       // If there are required goals, and not all are completed, only show required goals
@@ -395,10 +395,10 @@ function createRewardsWindow(earnedRewards, progressRewards, target) {
   `;
 
   rewardsDiv.innerHTML = rewardsHTML;
-  // Insert after the instructions section
-  const instructions = document.querySelector('.instructions');
-  if (instructions) {
-    instructions.parentNode.insertBefore(rewardsDiv, instructions.nextSibling);
+  // Insert after the bank section
+  const bank = document.querySelector('.bank');
+  if (bank) {
+    bank.parentNode.insertBefore(rewardsDiv, bank.nextSibling);
   } else {
     document.body.appendChild(rewardsDiv);
   }
@@ -462,6 +462,7 @@ function addNewRewardFromModal() {
   } else {
     showBriefMessage('❌ Error adding reward. This reward may already exist.', '#f44336');
   }
+  showManageRewardsModal()
 }
 
 function editReward(index) {
@@ -478,6 +479,7 @@ function editReward(index) {
   cancelBtn.style.display = 'inline-block';
   rewardInput.focus();
   rewardInput.select();
+  showManageRewardsModal();
 }
 
 function saveReward(index) {
@@ -591,6 +593,7 @@ function undoAddReward(rewardIndex) {
     console.error('Cannot undo: failed to remove reward');
     showBriefMessage('❌ Error removing reward', '#f44336');
   }
+  showManageRewardsModal();
 }
 
 // Function to delete a reward with notification and undo
@@ -620,6 +623,7 @@ function internalDeleteReward(rewardIndex, rewardName) {
   } else {
     showBriefMessage('❌ Error deleting reward', '#f44336');
   }
+  showManageRewardsModal();
 }
 
 // Reward deletion notification system
@@ -707,6 +711,7 @@ function undoDeleteReward(rewardName, encodedRewardBackup) {
     console.error('Error undoing reward deletion:', error);
     showBriefMessage('❌ Error restoring reward', '#f44336');
   }
+  showManageRewardsModal();
 }
 
 function undoLastActivity(rewardIndex, activityEntry) {

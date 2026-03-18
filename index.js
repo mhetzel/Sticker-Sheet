@@ -26,6 +26,9 @@ function initializeAppStructure() {
         <strong>Click on any reward below</strong> → Select the goal you completed → Your progress updates instantly!
       </p>
     </div>
+
+    <div class="bank">
+    </div>
     
     <div class="actions">
     </div>
@@ -76,8 +79,6 @@ function initializeApp() {
       closeInstructionsModal();
     }
 
-
-
     // add and init target button
     Target.initialize();
 
@@ -87,6 +88,8 @@ function initializeApp() {
     Rewards.loadRewards();
 
     Goals.initialize();
+
+    Activities.initialize();
 
     // add reset button last
     const buttonHTML = '<button id="reset-data-btn" class="action-btn secondary">🗑️ Reset All Data</button>';
