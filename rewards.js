@@ -362,7 +362,7 @@ function createRewardsWindow(earnedRewards, progressRewards, target) {
             Click to view activity history
           </div>
           <div class="reward-history-icon">📋</div>
-          <button onclick="internalDeleteReward('${reward.index}', '${reward.name}'); event.stopPropagation();" 
+          <button onclick="internalDeleteReward('${reward.index}'); event.stopPropagation();" 
                   class="delete-reward-button"
                   title="Delete this reward">
             🗑️
@@ -438,7 +438,7 @@ function populateCurrentRewards() {
           <button class="edit-reward-btn" onclick="editReward(${index})" id="edit-reward-btn-${index}">Edit</button>
           <button class="save-reward-btn" onclick="saveReward(${index})" id="save-reward-btn-${index}" style="display: none;">Save</button>
           <button class="cancel-reward-btn" onclick="cancelEditReward(${index})" id="cancel-reward-btn-${index}" style="display: none;">Cancel</button>
-          <button class="delete-reward-btn" onclick="internalDeleteReward(${index}, '${rewardName}')">Delete</button>
+          <button class="delete-reward-btn" onclick="internalDeleteReward(${index})">Delete</button>
         </div>
       </div>
     `;
@@ -479,7 +479,6 @@ function editReward(index) {
   cancelBtn.style.display = 'inline-block';
   rewardInput.focus();
   rewardInput.select();
-  showManageRewardsModal();
 }
 
 function saveReward(index) {
@@ -507,7 +506,11 @@ function saveReward(index) {
   }
 }
 
-function cancelEditReward(index, rewardName) {
+function cancelEditReward(index) {
+  const rewards = AppStorage.getRewards();
+  const currentReward = rewards[index];
+  const rewardName = currentReward.rewardName;
+
   const rewardText = document.getElementById(`reward-text-${index}`);
   const rewardInput = document.getElementById(`reward-edit-${index}`);
   const editBtn = document.getElementById(`edit-reward-btn-${index}`);
@@ -597,7 +600,7 @@ function undoAddReward(rewardIndex) {
 }
 
 // Function to delete a reward with notification and undo
-function internalDeleteReward(rewardIndex, rewardName) {
+function internalDeleteReward(rewardIndex) {
   const rewards = AppStorage.getRewards();
   if (!rewards || !rewards[rewardIndex]) {
     showBriefMessage('❌ Reward not found', '#f44336');
@@ -605,6 +608,7 @@ function internalDeleteReward(rewardIndex, rewardName) {
   }
 
   const reward = rewards[rewardIndex];
+  const rewardName = reward.rewardName;
   const activityCount = reward.activity ? reward.activity.length : 0;
 
   // Store reward data for potential undo
